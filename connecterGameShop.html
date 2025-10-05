@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créer un compte GameShop</title>
+  <style>
+    :root {
+      --neon-pink: #ff3ca6;
+      --neon-cyan: #00f0ff;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #0f2027);
+      background-size: 400% 400%;
+      animation: gradient 10s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      background: #1e1e1e;
+      color: white;
+      width: 780px;
+      border-radius: 20px;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeIn 0.8s ease;
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background: #333;
+      border-radius: 10px;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+      transition: width 0.4s ease;
+    }
+
+    .content {
+      display: flex;
+      flex: 1;
+    }
+
+    .left {
+      background-color: #2a2a2c;
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40%;
+    }
+
+    .left img {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+      border-radius: 20px;
+    }
+
+    .right {
+      padding: 28px;
+      width: 60%;
+    }
+
+    h2 { margin: 0 0 10px 0; }
+
+    .form-step { display: none; }
+    .form-step.active { display: block; }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      background: #333;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 15px;
+    }
+
+    button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 12px;
+      background-color: #4f8bff;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover { background-color: #3c76e0; }
+
+    button.small { width:auto; padding:8px 12px; margin-top:8px; }
+
+    .key-box {
+      margin-top: 12px;
+      background: #0b0c0e;
+      padding: 10px;
+      border-radius: 8px;
+      font-family: monospace;
+      word-break: break-all;
+      font-size: 13px;
+    }
+
+    .actions-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .small-muted { color: #a7b0b8; font-size: 13px; margin-top: 10px; }
+
+    label.file-label { display: inline-block; padding: 8px 12px; background: #333; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+    input[type="file"] { display: none; }
+
+    #admin-file-area { display: none; }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="progress-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <div class="content">
+      <div class="left">
+        <img src="https://raw.githubusercontent.com/lpatitouandelaunay-cmyk/GameShop/main/image%20apt.ico" alt="Logo GameShop">
+      </div>
+
+      <div class="right">
+        <h2 id="form-title">Créer un compte GameShop</h2>
+        <form id="signup-form" autocomplete="off">
+
+          <!-- Étape 1 -->
+          <div class="form-step active" id="step-1">
+            <input type="text" id="prenom" placeholder="Prénom" required />
+            <input type="text" id="nom" placeholder="Nom" required />
+            <button type="button" id="next-1">Suivant</button>
+
+            <!-- zone secrète admin -->
+            <div id="admin-file-area">
+              <label for="admin-file" class="file-label">Sélectionner fichier JSON (admin)</label>
+              <input type="file" id="admin-file" accept=".json">
+            </div>
+          </div>
+
+          <!-- Étape 2 -->
+          <div class="form-step" id="step-2">
+            <h2>2ᵉ étape</h2>
+            <input type="email" id="email" placeholder="Email" required />
+            <input type="password" id="password" placeholder="Mot de passe" required />
+            <button type="button" id="next-2">Suivant</button>
+          </div>
+
+          <!-- Étape 3 -->
+          <div class="form-step" id="step-3">
+            <h2>3ᵉ étape : Générer ta clé</h2>
+            <button type="button" id="gen-key-now" style="background:#2d7a5a;">🔑 Générer une clé</button>
+          </div>
+
+          <!-- Zone de clé -->
+          <div id="generated-area" style="display:none;">
+            <p class="small-muted">Clé générée :</p>
+            <div class="key-box" id="key-display"></div>
+            <p class="small-muted">SHA-256 :</p>
+            <div class="key-box" id="hash-display"></div>
+
+            <div class="actions-row">
+              <button type="button" id="copy-key-btn" class="small">Copier la clé</button>
+              <button type="button" id="download-files-btn" class="small">Télécharger fichiers</button>
+              <button type="button" id="reset-btn" class="small" style="background:#777;">Nouveau</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const progressBar = document.getElementById('progress-bar');
+    const prenom = document.getElementById('prenom');
+    const adminFileArea = document.getElementById('admin-file-area');
+    const adminFileInput = document.getElementById('admin-file');
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const step3 = document.getElementById('step-3');
+    const generatedArea = document.getElementById('generated-area');
+    const keyDisplay = document.getElementById('key-display');
+    const hashDisplay = document.getElementById('hash-display');
+
+    function setProgress(step) {
+      const percent = step === 1 ? 33 : step === 2 ? 66 : 100;
+      progressBar.style.width = percent + "%";
+    }
+    setProgress(1);
+
+    prenom.addEventListener('input', () => {
+      adminFileArea.style.display = prenom.value.trim().toLowerCase() === 'admin' ? 'block' : 'none';
+    });
+
+    document.getElementById('next-1').addEventListener('click', () => {
+      if (!prenom.value.trim() || !document.getElementById('nom').value.trim()) {
+        alert("Remplis prénom et nom.");
+        return;
+      }
+      step1.classList.remove('active');
+      step2.classList.add('active');
+      setProgress(2);
+    });
+
+    document.getElementById('next-2').addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      if (!email || !password) {
+        alert("Entre ton email et ton mot de passe.");
+        return;
+      }
+      step2.classList.remove('active');
+      step3.classList.add('active');
+      setProgress(3);
+    });
+
+    function randomHex(bytes = 32) {
+      const arr = new Uint8Array(bytes);
+      crypto.getRandomValues(arr);
+      return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function sha256hex(text) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function generateAndShowKey(source="user") {
+      const key = randomHex(32);
+      const hash = await sha256hex(key);
+      keyDisplay.textContent = key;
+      hashDisplay.textContent = hash;
+      step1.style.display = "none";
+      step2.style.display = "none";
+      step3.style.display = "none";
+      generatedArea.style.display = "block";
+      progressBar.style.width = "100%";
+      console.log(`Clé générée (${source}) :`, key);
+    }
+
+    document.getElementById('gen-key-now').addEventListener('click', async () => {
+      await generateAndShowKey("manual");
+    });
+
+    document.getElementById('copy-key-btn').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(keyDisplay.textContent);
+      alert("Clé copiée !");
+    });
+
+    document.getElementById('download-files-btn').addEventListener('click', () => {
+      const key = keyDisplay.textContent, hash = hashDisplay.textContent;
+      const save = (name, data) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([data], { type: 'text/plain' }));
+        a.download = name;
+        a.click();
+      };
+      save("key.txt", key);
+      save("expected_hash.txt", hash);
+      alert("Fichiers téléchargés !");
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => location.reload());
+
+    adminFileInput.addEventListener('change', async e => {
+      const file = e.target.files[0];
+      if (!file || !file.name.endsWith('.json')) return alert("Fichier invalide");
+      try {
+        const data = JSON.parse(await file.text());
+        const validBG = /linear-gradient\(90deg,var\(--neon-pink\),var\(--neon-cyan\)\)/i;
+        if (validBG.test(data.background || "") && data.text) {
+          await generateAndShowKey("admin");
+          document.getElementById('card').style.background = data.background;
+        } else {
+          alert("Fichier JSON non valide pour le mode admin !");
+        }
+      } catch {
+        alert("Erreur de lecture du fichier JSON !");
+      }
+    });
+  </script>
+</body>
+</html>
